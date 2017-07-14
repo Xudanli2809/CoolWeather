@@ -100,9 +100,10 @@ public class ChooseAreaFragment extends Fragment {
                         WeatherActivity activity=(WeatherActivity) getActivity();
                         activity.drawerLayout.closeDrawers();//关闭滑动菜单
                         activity.swipeRefresh.setRefreshing(true);//设置下拉刷新
+                        activity.mWeatherId = weatherId;
                         activity.requestWeather(weatherId);//重新请求数据
                     }
-
+//********************************************************************************************************************************
 
                 }
             }

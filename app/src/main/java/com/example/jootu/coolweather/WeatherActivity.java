@@ -10,6 +10,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -39,6 +41,9 @@ public class WeatherActivity extends AppCompatActivity {
     public DrawerLayout drawerLayout;
     private Button navButton;
 
+    private long exitTime = 0;
+
+
     private ScrollView weatherLayout;
     private TextView titleCity;
     private TextView titleUpdateTime;
@@ -54,8 +59,9 @@ public class WeatherActivity extends AppCompatActivity {
     private ImageView bingPicImg;
 
     public SwipeRefreshLayout swipeRefresh;
-    private String mWeatherId;
+    public String mWeatherId;
 
+    public SharedPreferences prefs;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,7 +97,8 @@ public class WeatherActivity extends AppCompatActivity {
         drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
         navButton=(Button)findViewById(R.id.nav_button);
 
-        SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
+        //SharedPreferences
+                prefs= PreferenceManager.getDefaultSharedPreferences(this);
         String weatherString=prefs.getString("weather",null);
 
         if (weatherString!=null){
@@ -101,10 +108,14 @@ public class WeatherActivity extends AppCompatActivity {
             mWeatherId=weather.basic.weatherId;
 
             showWeatherInfo(weather);
+
         }else{
             //无缓存的时候去服务器查天气数据
             mWeatherId=getIntent().getStringExtra("weather_id");
             weatherLayout.setVisibility(View.INVISIBLE);
+
+            Log.e("weather:",mWeatherId);
+
             requestWeather(mWeatherId);
         }
 
@@ -131,9 +142,6 @@ public class WeatherActivity extends AppCompatActivity {
         }else{
             loadBingPic();
         }
-
-
-
 
     }
 
@@ -166,7 +174,7 @@ public class WeatherActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         if(weather!=null&&"ok".equals(weather.status)){
-                            //文件存储
+
                             SharedPreferences.Editor editor=PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("weather",responseText);
                             editor.apply();
@@ -257,4 +265,25 @@ public class WeatherActivity extends AppCompatActivity {
         startService(intent);
 
     }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if(keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_DOWN){
+            if((System.currentTimeMillis()-exitTime) > 2000){
+                Toast.makeText(getApplicationContext(), "再按一次退出程序", Toast.LENGTH_SHORT).show();
+                exitTime = System.currentTimeMillis();
+
+            } else {
+
+                mWeatherId=prefs.getString("mWeatherId",null);
+                finish();
+                System.exit(0);
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
 }
